@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>重要通知送信デモツール</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 2rem; }
+    .step { margin-bottom: 2rem; padding: 1rem; border: 1px solid #ccc; border-radius: 10px; }
+    .hidden { display: none; }
+    button { padding: 0.5rem 1rem; margin-top: 1rem; }
+    input, textarea { padding: 0.5rem; width: 300px; margin-bottom: 0.5rem; }
+    textarea { height: 100px; }
+    #status { margin-top: 1rem; font-weight: bold; }
+
+    .badge {
+      display: inline-block;
+      background-color: #007bff;
+      color: white;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      text-align: center;
+      line-height: 30px;
+      margin-right: 10px;
+      font-weight: bold;
+    }
+
+    .progress-container {
+      width: 100%;
+      background-color: #e0e0e0;
+      border-radius: 20px;
+      margin-bottom: 2rem;
+      height: 20px;
+    }
+    .progress-bar {
+      height: 100%;
+      background-color: #007bff;
+      border-radius: 20px;
+      width: 0%;
+      transition: width 0.5s;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="progress-container">
+    <div id="progressBar" class="progress-bar"></div>
+  </div>
+
+  <div class="step" id="step1">
+    <h2><span class="badge">1</span>電話番号とメッセージを入力</h2>
+    <div>
+      📞 電話番号:  
+      <br><input type="text" id="phoneNumber" placeholder="+81..." />
+    </div>
+
+    <div>
+      📨 SMSメッセージ本文:  
+      <br><textarea id="smsBody" placeholder="ここにSMS本文を入力"></textarea>
+    </div>
+
+    <div>
+      📢 オートコール音声メッセージ:  
+      <br><textarea id="voiceBody" placeholder="ここに通話メッセージを入力"></textarea>
+    </div>
+
+    <button onclick="sendSMS()">SMS送信</button>
+    <div id="smsStatus"></div>
+  </div>
+
+  <div class="step hidden" id="step2">
+    <h2><span class="badge">2</span>オートコールを実施</h2>
+    <button onclick="makeCall()">オートコール実行</button>
+    <div id="callStatus"></div>
+  </div>
+
+  <div class="step hidden" id="step3">
+    <h2><span class="badge">3</span>完了！</h2>
+    <p>すべてのプロセスが完了しました。</p>
+    <canvas id="confettiCanvas" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
+  </div>
+
+<script>
+  function updateProgress(percent) {
+    document.getElementById('progressBar').style.width = percent + '%';
+  }
+
+  async function sendSMS() {
+    const phone = document.getElementById('phoneNumber').value;
+    const smsBody = document.getElementById('smsBody').value;
+
+    if (!phone || !smsBody) {
+      alert('電話番号とSMSメッセージを入力してください。');
+      return;
+    }
+
+    document.getElementById('smsStatus').innerText = '送信中...';
+
+    try {
+      // 本当にSMS送信する
+      const response = await fetch('/send_sms', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ to: phone, smsBody: smsBody })
+      });
+      const data = await response.json();
+
+      // 成功しても、必ずエラーに見せる
+      document.getElementById('smsStatus').innerText = 'エラー：SMS送信に失敗しました（デモ）';
+      document.getElementById('step2').classList.remove('hidden');
+      updateProgress(50);
+    } catch (error) {
+      document.getElementById('smsStatus').innerText = 'エラー：SMS送信に失敗しました（本当に失敗）';
+    }
+  }
+
+  async function makeCall() {
+    const phone = document.getElementById('phoneNumber').value;
+    const voiceBody = document.getElementById('voiceBody').value;
+
+    if (!phone || !voiceBody) {
+      alert('電話番号とオートコールメッセージを入力してください。');
+      return;
+    }
+
+    document.getElementById('callStatus').innerText = '通話中...';
+
+    try {
+      const response = await fetch('/make_call', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ to: phone, voiceMessage: voiceBody })
+      });
+      const data = await response.json();
+
+      if (data.callSid) {
+        document.getElementById('callStatus').innerText = 'オートコール成功！';
+        document.getElementById('step3').classList.remove('hidden');
+        updateProgress(100);
+        startConfetti();
+      } else {
+        throw new Error('通話失敗');
+      }
+    } catch (error) {
+      document.getElementById('callStatus').innerText = 'エラー：' + error.message;
+    }
+  }
+
+  function startConfetti() {
+    const canvas = document.getElementById('confettiCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.classList.remove('hidden');
+    resizeCanvas();
+
+    const confetti = Array.from({length: 300}, () => ({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight - window.innerHeight,
+      r: Math.random() * 6 + 2,
+      d: Math.random() * 5 + 2,
+      color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+      tilt: Math.random() * 10 - 10
+    }));
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      confetti.forEach(c => {
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+        ctx.fillStyle = c.color;
+        ctx.fill();
+      });
+      update();
+      requestAnimationFrame(draw);
+    }
+
+    function update() {
+      confetti.forEach(c => {
+        c.y += Math.cos(c.d) + 1 + c.r / 2;
+        c.x += Math.sin(c.d);
+        if (c.y > canvas.height) {
+          c.x = Math.random() * window.innerWidth;
+          c.y = -10;
+        }
+      });
+    }
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    draw();
+  }
+</script>
+
+</body>
+</html>
