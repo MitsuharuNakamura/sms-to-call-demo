@@ -101,20 +101,7 @@ CALLER_ID=（購入済みTwilio電話番号）
 TWILIO_PHONE_NUMBER=（任意：日本向けSMS用）
 ```
 
-### 6. `twilio-run.json` ファイルを作成
-
-```json
-{
-  "serviceName": "sms-to-call-demo",
-  "functionsFolder": "functions",
-  "assetsFolder": "assets",
-  "runtime": "node18",
-  "env": ".env",
-  "region": "jp1"
-}
-```
-
-### 7. Functions & Assetsをデプロイ
+### 6. Functions & Assetsをデプロイ
 
 ```bash
 twilio serverless:deploy
