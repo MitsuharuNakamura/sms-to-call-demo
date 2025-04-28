@@ -14,7 +14,7 @@
 - SMS送信成功後も、画面では「失敗」と見せる演出
 - オートコールをリアルに発信（音声読み上げ）
 - 進捗バーで送信ステップを視覚表示
-- 完了時には画面いっぱいに花火（Confetti）演出
+- 完了時には画面いっぱいに花火演出
 
 ---
 
@@ -117,7 +117,6 @@ twilio serverless:deploy
 ## 📌 注意事項
 
 - `.env`ファイルは**絶対にGitHubへプッシュしない**でください。
-- 日本向けSMSではSenderID（例: "TWILIODEMO"）は使えず、購入済み番号を使用する必要があります。
 - FunctionsやAssetsの修正後は毎回`twilio serverless:deploy`が必要です。
 
 ---
