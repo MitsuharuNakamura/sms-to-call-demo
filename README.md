@@ -18,36 +18,6 @@
 
 ---
 
-## 🚀 GitHubへの公開手順
-
-### 1. GitHubでリポジトリを作成
-- リポジトリ名を設定し（例: `twilio-sms-call-demo`）、**Public**に設定して作成します。
-
-### 2. ローカルでプロジェクトを準備
-
-```
-twilio-sms-call-demo/
-├── assets/
-│   └── index.html
-├── functions/
-│   ├── send_sms.js
-│   └── make_call.js
-├── README.md
-```
-
-### 3. Git初期化＆リモート接続
-
-```bash
-cd path/to/twilio-sms-call-demo
-git init
-git add .
-git commit -m "Initial commit: Twilio SMS & Call Demo"
-git remote add origin https://github.com/あなたのアカウント名/twilio-sms-call-demo.git
-git push -u origin main
-```
-
----
-
 ## 🚀 Twilio CLIを使った環境構築・デプロイ手順
 
 このプロジェクトは、Twilio CLIを使ってFunctions & Assetsへデプロイできます。
